@@ -1,22 +1,25 @@
 const express = require("express");
 const parseMp = require("express-parse-multipart");
-const sharp = require("sharp")
+const sharp = require("sharp");
+const uuid = require("uuid");
 
 let app = express();
 app.use(parseMp);
 
 function createResponse(imageName) {
-	app.get("/100px" + imageName, function(req, res){
-		res.download(__dirname + "/100px" + imageName)
-	})
-	
-	app.get("/200px" + imageName, function(req, res){
-		res.download(__dirname + "/100px" + imageName)
-	})
-	
-	app.get("/400px" + imageName, function(req, res){
-		res.download(__dirname + "/100px" + imageName)
-	})
+	uuid100 = uuid.v4();
+	uuid200 = uuid.v4();
+	uuid400 = uuid.v4();
+
+	app.get("/" + uuid100, function (req, res) {
+		res.download(__dirname + "/100px" + imageName);
+	});
+	app.get("/" + uuid200, function (req, res) {
+		res.download(__dirname + "/200px" + imageName);
+	});
+	app.get("/" + uuid400, function (req, res) {
+		res.download(__dirname + "/400px" + imageName);
+	});
 
 	return `<!DOCTYPE html>
 	<html lang="en">
@@ -32,24 +35,34 @@ function createResponse(imageName) {
 			<p><input type="file" name="myFile">
 			<p><button type="submit">Submit</button>
 		</form>
-		<a id = "img100" href = ${"/100px" + imageName}> 100px </a>
-		<a id = "img200" href = ${"/200px" + imageName}> 200px </a>
-		<a id = "img400" href = ${"/400px" + imageName}> 400px </a>
+		<a id = "img100" href = ${"/" + uuid100}> 100px <br> </a>
+		<a id = "img200" href = ${"/" + uuid200}> 200px <br> </a>
+		<a id = "img400" href = ${"/" + uuid400}> 400px <br> </a>
 	</body>
-	</html>`
+	</html>`;
 }
 
 app.get("/", function (req, res) {
 	res.sendFile(__dirname + "/" + "index.html");
 });
 
-app.post("/", function (req, res) {
+app.post("/", async function (req, res) {
 	imageName = req.formData[0].filename;
 	rawImage = req.formData[0].data;
-	sharp(rawImage).resize(100, 100).toFile(__dirname + "/100px" + imageName);
-    sharp(rawImage).resize(200, 200).toFile(__dirname + "/200px" + imageName);
-    sharp(rawImage).resize(400, 400).toFile(__dirname + "/400px" + imageName);
-    res.send(createResponse(imageName));
+	try {
+		await sharp(rawImage)
+			.resize(100, 100)
+			.toFile(__dirname + "/100px" + imageName);
+		await sharp(rawImage)
+			.resize(200, 200)
+			.toFile(__dirname + "/200px" + imageName);
+		await sharp(rawImage)
+			.resize(400, 400)
+			.toFile(__dirname + "/400px" + imageName);
+		res.send(createResponse(imageName));
+	} catch (err) {
+		res.sendFile(__dirname + "/" + "notAnImage.html");
+	}
 });
 
 app.listen(5000, () => console.log("Listening in 5000"));
