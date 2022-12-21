@@ -1,8 +1,10 @@
 {
-  "dependencies": {
-    "express": "^4.18.2",
-    "express-parse-multipart": "^1.1.2",
-    "sharp": "^0.31.2",
-    "uuid": "^9.0.0"
-  }
+	"name": "thumbnail",
+	"main": "app.js",
+	"dependencies": {
+		"express": "^4.18.2",
+		"express-parse-multipart": "^1.1.2",
+		"sharp": "^0.31.2",
+		"uuid": "^9.0.0"
+	}
 }

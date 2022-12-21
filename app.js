@@ -21,25 +21,33 @@ function createResponse(imageName) {
 		res.download(__dirname + "/400px" + imageName);
 	});
 
-	return `<!DOCTYPE html>
-	<html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Thumbnail</title>
-	</head>
-	<body>
-		<h3> Get your thumbnails now </h3>
-		<form action="http://localhost:5000" method="post" enctype="multipart/form-data">
-			<p><input type="file" name="myFile">
-			<p><button type="submit">Submit</button>
-		</form>
-		<a id = "img100" href = ${"/" + uuid100}> 100px <br> </a>
-		<a id = "img200" href = ${"/" + uuid200}> 200px <br> </a>
-		<a id = "img400" href = ${"/" + uuid400}> 400px <br> </a>
-	</body>
-	</html>`;
+	return /* HTML */ `<!DOCTYPE html>
+		<html lang="en">
+			<head>
+				<meta charset="UTF-8" />
+				<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+				<meta
+					name="viewport"
+					content="width=device-width, initial-scale=1.0"
+				/>
+				<title>Thumbnail</title>
+			</head>
+			<body>
+				<h3>Get your thumbnails now</h3>
+				<form
+					action="http://localhost:5000"
+					method="post"
+					enctype="multipart/form-data"
+				>
+					<p><input type="file" name="myFile" /></p>
+					<p><button type="submit">Submit</button></p>
+				</form>
+
+				<a id="img100" href=${"/" + uuid100}> 100px <br /> </a>
+				<a id="img200" href=${"/" + uuid200}> 200px <br /> </a>
+				<a id="img400" href=${"/" + uuid400}> 400px <br /> </a>
+			</body>
+		</html>`;
 }
 
 app.get("/", function (req, res) {
@@ -50,17 +58,20 @@ app.post("/", async function (req, res) {
 	imageName = req.formData[0].filename;
 	rawImage = req.formData[0].data;
 	try {
-		await sharp(rawImage)
-			.resize(100, 100)
-			.toFile(__dirname + "/100px" + imageName);
-		await sharp(rawImage)
-			.resize(200, 200)
-			.toFile(__dirname + "/200px" + imageName);
-		await sharp(rawImage)
-			.resize(400, 400)
-			.toFile(__dirname + "/400px" + imageName);
+		await Promise.all([
+			sharp(rawImage)
+				.resize(100, 100)
+				.toFile(__dirname + "/100px" + imageName),
+			sharp(rawImage)
+				.resize(200, 200)
+				.toFile(__dirname + "/200px" + imageName),
+			sharp(rawImage)
+				.resize(400, 400)
+				.toFile(__dirname + "/400px" + imageName),
+		]);
 		res.send(createResponse(imageName));
 	} catch (err) {
+		console.log(err);
 		res.sendFile(__dirname + "/" + "notAnImage.html");
 	}
 });
